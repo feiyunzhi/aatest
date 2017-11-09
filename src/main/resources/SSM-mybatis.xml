@@ -1,0 +1,67 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd">
+
+
+    <!--这个文件是spring用来创建sqlsession-factory的基础-->
+    <!--这个配置文件包含了所有的MyBatis的配置-->
+
+    <!--1,加载properties文件-->
+    <bean id="propertyConfigurer"
+          class="org.springframework.beans.factory.config.PropertyPlaceholderConfigurer">
+        <property name="location" value="classpath:db.properties"/>
+
+    </bean>
+
+    <!--2,配置连接池-->
+    <bean id="dataSource"
+          class="org.apache.commons.dbcp2.BasicDataSource">
+        <property name="driverClassName" value="${ssm.driver}"/>
+        <property name="url" value="${ssm.url}"/>
+        <property name="username" value="${ssm.username}"/>
+        <property name="password" value="${ssm.password}"/>
+    </bean>
+
+    <!--3,配置sqlSessionFactory-->
+    <bean id="sqlSessionFactory" class="org.mybatis.spring.SqlSessionFactoryBean">
+
+        <!--加载一级缓存配置文件-->
+        <property name="configLocation" value="classpath:mybatis-config.xml" />
+
+        <property name="dataSource" ref="dataSource"/>
+        <property name="mapperLocations" value="classpath:com/lanou/mapper/*.xml"/>
+
+        <!--分页-->
+        <property name="plugins">
+            <array>
+                <bean class="com.github.pagehelper.PageHelper">
+                    <property name="properties">
+                        <value>
+                            dialect=mysql
+                        </value>
+                    </property>
+                </bean>
+            </array>
+        </property>
+
+    </bean>
+
+    <!--4,mapper扫描器-->
+    <bean class="org.mybatis.spring.mapper.MapperScannerConfigurer">
+        <!--接口文件-->
+        <property name="basePackage" value="com.lanou.mapper"/>
+        <property name="sqlSessionFactoryBeanName" value="sqlSessionFactory"/>
+
+    </bean>
+
+    <!--5,事务管理器-->
+    <bean id="transactionManager"
+    class="org.springframework.jdbc.datasource.DataSourceTransactionManager">
+        <property name="dataSource" ref="dataSource"/>
+
+    </bean>
+
+
+
+</beans>

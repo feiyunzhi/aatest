@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:p="http://www.springframework.org/schema/p"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd">
+
+    <!--使redis与spring进行连接-->
+
+    <bean id="propertyConfigurer"
+          class="org.springframework.beans.factory.config.PropertyPlaceholderConfigurer">
+
+        <!--加载属性文件-->
+        <property name="locations">
+            <list>
+                <value>classpath:redis.properties</value>
+                <value>classpath:db.properties</value>
+            </list>
+        </property>
+    </bean>
+
+    <!--连接池配置-->
+    <bean id="poolConfig" class="redis.clients.jedis.JedisPoolConfig">
+        <property name="maxTotal" value="${redis.maxActive}"/>
+        <!--最大空闲数-->
+        <property name="maxIdle" value="200"/>
+        <property name="maxWaitMillis" value="${redis.maxWait}"/>
+    </bean>
+
+    <bean id="jedisConnetionFactory"
+          class="org.springframework.data.redis.connection.jedis.JedisConnectionFactory"
+          p:host-name="${redis.host}"
+          p:port="${redis.port}"
+          p:password="${redis.pass}"
+          p:poolConfig-ref="poolConfig"
+    >
+
+    </bean>
+
+    <!--在最初利用transfer为 jedisConnectionFactory 进行赋值 保证其有值-->
+    <bean id="redisCacheTransfer" class="com.lanou.cache.RedisCacheTransfer">
+
+        <property name="jedisConnectionFactory" ref="jedisConnetionFactory"/>
+
+    </bean>
+
+</beans>

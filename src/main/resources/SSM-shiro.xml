@@ -1,0 +1,77 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd">
+
+
+    <bean id="shiroFilter" class="org.apache.shiro.spring.web.ShiroFilterFactoryBean">
+
+        <!--装配SecurityManager-->
+        <property name="securityManager" ref="securityManager"/>
+
+        <!--如果,没有认证, 需要跳转到的地址,http可以访问到的地址-->
+        <!--如果不配置表单认证过滤器,默认的登录认证地址和该配置相同,采用post-->
+        <property name="loginUrl" value="/login"/>
+
+        <property name="filters">
+            <map>
+                <entry key="authc" value-ref="formAuthenticationFilter"/>
+            </map>
+        </property>
+
+        <!--****-->
+        <property name="filterChainDefinitions">
+            <value>
+
+                /lib/** = anon
+                /static/** = anon
+                /temp/** = anon
+
+                /index = anon
+
+
+                <!--验证码-->
+                /authImage = anon
+
+                <!--该地址是要经过表单认证过滤器的-->
+                /loginsubmit = authc
+
+                <!--退出,直接请求logout可以直接退出-->
+                /logout = logout
+
+                /error = anon
+
+                <!--如果需要多个过滤器,需要逗号隔开-->
+                /items/query = roles[admin],user
+
+                <!--/** 代表除了上述请求外的所有请求,都需要认证才能访问-->
+                /** = user
+
+            </value>
+        </property>
+
+    </bean>
+
+    <bean id="myRealm" class="com.lanou.shiro.MyRealm"/>
+
+
+    <bean id="securityManager" class="org.apache.shiro.web.mgt.DefaultWebSecurityManager">
+        <property name="realm" ref="myRealm"/>
+
+    </bean>
+
+    <!--表单认证过滤器-->
+    <!--基于form的身份认证过滤器,如果不配置也会自动注册,表单中的用户账号/密码/loginURL将
+        采用默认值(/login),建议配置-->
+    <bean id="formAuthenticationFilter"
+          class="org.apache.shiro.web.filter.authc.FormAuthenticationFilter">
+
+        <property name="usernameParam" value="usercode"/>
+
+        <property name="passwordParam" value="password"/>
+
+        <!--登录认证的地址-->
+        <property name="loginUrl" value="/loginsubmit"/>
+    </bean>
+
+</beans>
